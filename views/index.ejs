@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@100;400;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/styles/styles.css">
+    <title>Bandeer</title>
+</head>
+
+<body>
+
+   <!-- Date formatting, to be used in the results area -->
+   <% 
+   function ordinalSuffix(date) {
+       if (date > 3 && date < 21) return 'th';
+       switch (date % 10) {
+           case 1:  return "st";
+           case 2:  return "nd";
+           case 3:  return "rd";
+           default: return "th";
+       }
+   }
+   
+   function formatEventDate(dateString) {
+       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+   
+       const dateObj = new Date(dateString);
+       const dayName = days[dateObj.getDay()];
+       const monthName = months[dateObj.getMonth()];
+       const date = dateObj.getDate();
+   
+       return `${dayName}, ${monthName} ${date}${ordinalSuffix(date)}`;
+   }
+   %>
+<!-- CTA, Search bar and button -->
+<div class="container">
+  <div class="content-row">
+
+    <!-- <div>
+      <img class="logo" src="/assets/images/bandeer-logo.png" alt="Bandeer logo"/>
+    </div> -->
+
+      <div class="cta">
+          <h1>Find concerts near you</h1>
+      </div>
+
+      <div class="form-container">
+          <form action="/submit" method="GET">
+              <div class="input-group">
+                  <input type="text" id="locationInput" name="city" placeholder="City (e.g. Barcelona, New York, London)">
+              </div>
+
+              <div class="input-group">
+                  <input type="text" id="artistName" name="keyword" placeholder="Artist (e.g. Ed Sheeran, Blink-182, Billie Eilish)">
+              </div>
+
+              <button type="submit">Search</button>
+          </form>
+      </div>
+  </div>
+</div>
+
+  <!-- List of results from search -->
+    <div>
+            <% if (events && events.length) { %>
+                <div>
+                  <p class="results-count"><%= events.length %> results found:</p>
+                </div>
+                <div class="results-area container">
+                  <% events.forEach(event => { %>
+                      <div class="list-item">
+                          <img class="artist-image" src="<%= event.images[0].url %>" alt="artist's image">
+                          <div id="event-content">
+                              <h4><%= event.name %></h4>
+                              <p><%= formatEventDate(event.dates.start.localDate) %></p>
+                              <p><%= event._embedded.venues[0].name %></p>
+                              <p><%= event._embedded.venues[0].city.name %>, <%= event._embedded.venues[0].country.countryCode %></p>
+                              <% if (event._embedded && event._embedded.attractions && event._embedded.attractions.length > 0) { %>
+                                  <p><a href="<%= event._embedded.attractions[0].url %>" target="_blank">Buy Tickets</a></p>
+                              <% } else { %>
+                                  <p><a href="#" onclick="return false;">No Tickets Available</a></p>
+                              <% } %>
+                          </div> <!-- Closing tag for event-content -->
+                      </div> <!-- Closing tag for list-item -->
+                  <% }) %>
+              </div> <!-- Closing tag for results-area container -->
+            <% } else if (content) { %>
+                <p class="no-events"><%= content %></p>
+            <% } else { %>
+                <p class="no-events-greeting">Your next concert memory awaits. Dive in!</p>
+            <% } %>    
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input[type="text"]');
+
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value.trim() !== '') {
+                    this.style.color = '#E5C3A6';
+                } else {
+                    this.style.color = '';  // fallback to the default color if the input is empty
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
